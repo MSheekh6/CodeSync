@@ -2,28 +2,84 @@ import Editor from '@monaco-editor/react';
 import { useState } from 'react';
 
 function CodeEditor() {
-  const [code, setCode] = useState(`<!DOCTYPE html>
+  // Separate state for each language
+  const [html, setHtml] = useState(`<h1>Hello World!</h1>
+<p>Start editing to see the preview update.</p>
+<button onclick="sayHello()">Click Me</button>`);
+
+  const [css, setCss] = useState(`body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f0f0f0;
+}
+
+h1 {
+  color: #333;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}`);
+
+  const [js, setJs] = useState(`function sayHello() {
+  alert('Hello from CodeSync!');
+}`);
+
+  // Track active tab
+  const [activeTab, setActiveTab] = useState('html');
+
+  // Get current code based on active tab
+  const getCode = () => {
+    switch (activeTab) {
+      case 'html': return html;
+      case 'css': return css;
+      case 'js': return js;
+      default: return html;
+    }
+  };
+
+  // Get language for Monaco
+  const getLanguage = () => {
+    switch (activeTab) {
+      case 'html': return 'html';
+      case 'css': return 'css';
+      case 'js': return 'javascript';
+      default: return 'html';
+    }
+  };
+
+  // Handle code changes
+  const handleEditorChange = (value) => {
+    switch (activeTab) {
+      case 'html': setHtml(value); break;
+      case 'css': setCss(value); break;
+      case 'js': setJs(value); break;
+      default: break;
+    }
+  };
+
+  // Combine all code for preview
+  const getPreviewCode = () => {
+    return `
+<!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f0f0f0;
-    }
-    h1 {
-      color: #333;
-    }
-  </style>
+  <style>${css}</style>
 </head>
 <body>
-  <h1>Hello World!</h1>
-  <p>Start editing to see the preview update.</p>
+  ${html}
+  <script>${js}</script>
 </body>
-</html>`);
-
-  const handleEditorChange = (value) => {
-    setCode(value);
+</html>`;
   };
 
   return (
@@ -31,14 +87,34 @@ function CodeEditor() {
       {/* Editor Panel */}
       <div className="editor-panel">
         <div className="panel-header">
-          <span>Code Editor</span>
+          {/* Tabs */}
+          <div className="tabs">
+            <button
+              className={`tab ${activeTab === 'html' ? 'active' : ''}`}
+              onClick={() => setActiveTab('html')}
+            >
+              HTML
+            </button>
+            <button
+              className={`tab ${activeTab === 'css' ? 'active' : ''}`}
+              onClick={() => setActiveTab('css')}
+            >
+              CSS
+            </button>
+            <button
+              className={`tab ${activeTab === 'js' ? 'active' : ''}`}
+              onClick={() => setActiveTab('js')}
+            >
+              JS
+            </button>
+          </div>
         </div>
         <div className="editor-container">
           <Editor
             height="100%"
-            defaultLanguage="html"
+            language={getLanguage()}
             theme="vs-dark"
-            value={code}
+            value={getCode()}
             onChange={handleEditorChange}
             options={{
               minimap: { enabled: false },
@@ -59,7 +135,7 @@ function CodeEditor() {
         <div className="preview-container">
           <iframe
             title="preview"
-            srcDoc={code}
+            srcDoc={getPreviewCode()}
             sandbox="allow-scripts"
           />
         </div>
