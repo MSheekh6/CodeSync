@@ -37,6 +37,13 @@ button:hover {
   // Track active tab
   const [activeTab, setActiveTab] = useState('html');
 
+  // File data with names and icons
+  const files = [
+    { id: 'html', name: 'index.html', icon: '📄' },
+    { id: 'css', name: 'style.css', icon: '🎨' },
+    { id: 'js', name: 'script.js', icon: '⚡' },
+  ];
+
   // Get current code based on active tab
   const getCode = () => {
     switch (activeTab) {
@@ -84,29 +91,39 @@ button:hover {
 
   return (
     <div className="editor-layout">
+      {/* Sidebar - File Explorer */}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <span>📁 Files</span>
+        </div>
+        <div className="file-list">
+          {files.map((file) => (
+            <div
+              key={file.id}
+              className={`file-item ${activeTab === file.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(file.id)}
+            >
+              <span className="file-icon">{file.icon}</span>
+              <span className="file-name">{file.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Editor Panel */}
       <div className="editor-panel">
         <div className="panel-header">
-          {/* Tabs */}
-          <div className="tabs">
-            <button
-              className={`tab ${activeTab === 'html' ? 'active' : ''}`}
-              onClick={() => setActiveTab('html')}
-            >
-              HTML
-            </button>
-            <button
-              className={`tab ${activeTab === 'css' ? 'active' : ''}`}
-              onClick={() => setActiveTab('css')}
-            >
-              CSS
-            </button>
-            <button
-              className={`tab ${activeTab === 'js' ? 'active' : ''}`}
-              onClick={() => setActiveTab('js')}
-            >
-              JS
-            </button>
+          <div className="open-tabs">
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className={`open-tab ${activeTab === file.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(file.id)}
+              >
+                <span>{file.name}</span>
+                <span className="tab-close">×</span>
+              </div>
+            ))}
           </div>
         </div>
         <div className="editor-container">
@@ -130,7 +147,7 @@ button:hover {
       {/* Preview Panel */}
       <div className="preview-panel">
         <div className="panel-header">
-          <span>Live Preview</span>
+          <span>🌐 Preview</span>
         </div>
         <div className="preview-container">
           <iframe
