@@ -12,24 +12,40 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #1e1e1e;
+  background-color: #0d1117;
   color: #fff;
   font-family: 'Poppins', sans-serif;
 }
 
+/* Header Styles */
 .header {
-  padding: 12px 20px;
-  background-color: #1a1f36;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1a1f36 0%, #151929 100%);
   border-bottom: 1px solid #2d3555;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header h1 {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #6c9eff;
+  letter-spacing: -0.5px;
+}
+
+.header-tagline {
+  font-size: 0.75rem;
+  color: #5a6a8a;
+  margin-left: auto;
+  font-weight: 400;
 }
 
 .main-content {
@@ -47,47 +63,53 @@ body {
 
 /* Sidebar - File Explorer */
 .sidebar {
-  width: 200px;
-  background-color: #1a1f36;
+  width: 220px;
+  background: linear-gradient(180deg, #1a1f36 0%, #161b2e 100%);
   border-right: 1px solid #2d3555;
   display: flex;
   flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-header {
-  padding: 14px 16px;
-  font-size: 0.75rem;
+  padding: 16px 18px;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  color: #8892b0;
+  color: #6c7a9a;
   border-bottom: 1px solid #2d3555;
-  letter-spacing: 1px;
-  font-weight: 500;
+  letter-spacing: 1.5px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .file-list {
   flex: 1;
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .file-item {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  padding: 11px 18px;
   cursor: pointer;
-  transition: all 0.15s ease;
-  gap: 10px;
+  transition: all 0.2s ease;
+  gap: 12px;
+  margin: 2px 8px;
+  border-radius: 6px;
 }
 
 .file-item:hover {
-  background-color: #252b48;
+  background-color: rgba(108, 158, 255, 0.1);
+  transform: translateX(2px);
 }
 
 .file-item.active {
-  background-color: #2d3555;
+  background: linear-gradient(90deg, rgba(108, 158, 255, 0.2) 0%, transparent 100%);
   border-left: 3px solid #6c9eff;
+  margin-left: 5px;
 }
 
 .file-icon {
@@ -100,10 +122,16 @@ body {
   font-size: 0.85rem;
   color: #a8b2d1;
   font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.file-item:hover .file-name {
+  color: #fff;
 }
 
 .file-item.active .file-name {
   color: #fff;
+  font-weight: 500;
 }
 
 /* Editor Panel */
@@ -113,6 +141,7 @@ body {
   flex-direction: column;
   border-right: 1px solid #2d3555;
   min-width: 0;
+  background-color: #1e1e1e;
 }
 
 .editor-container {
@@ -122,13 +151,13 @@ body {
 
 /* Panel Headers */
 .panel-header {
-  background-color: #1a1f36;
+  background: linear-gradient(135deg, #1a1f36 0%, #181d30 100%);
   border-bottom: 1px solid #2d3555;
   display: flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0 12px;
-  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  gap: 10px;
   color: #8892b0;
   font-size: 0.8rem;
 }
@@ -137,29 +166,41 @@ body {
 .open-tabs {
   display: flex;
   overflow-x: auto;
+  padding: 0;
 }
 
 .open-tab {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background-color: #252b48;
   border-right: 1px solid #2d3555;
   cursor: pointer;
   font-size: 0.8rem;
   color: #8892b0;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .open-tab:hover {
   background-color: #2d3555;
+  color: #fff;
 }
 
 .open-tab.active {
   background-color: #1e1e1e;
   color: #fff;
-  border-bottom: 2px solid #6c9eff;
+}
+
+.open-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6c9eff 0%, #4a7cff 100%);
 }
 
 .tab-icon {
@@ -176,9 +217,14 @@ body {
   min-width: 0;
 }
 
+.preview-panel .panel-header {
+  background: linear-gradient(135deg, #1a2332 0%, #162029 100%);
+}
+
 .preview-container {
   flex: 1;
   overflow: hidden;
+  padding: 0;
 }
 
 .preview-container iframe {
