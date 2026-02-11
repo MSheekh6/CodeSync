@@ -15,7 +15,6 @@ function App() {
           </svg>
         </div>
         <h1>CodeSync</h1>
-        <span className="header-tagline">Real-time Collaborative Editor</span>
       </header>
       <main className="main-content">
         <CodeEditor />

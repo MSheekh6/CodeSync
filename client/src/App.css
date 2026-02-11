@@ -233,3 +233,109 @@ body {
   border: none;
   background-color: #fff;
 }
+
+/* ========================================
+   RESPONSIVE DESIGN - Tablet & Mobile
+   ======================================== */
+
+/* Tablet - screens smaller than 1024px */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 180px;
+  }
+
+  .file-item {
+    padding: 10px 14px;
+  }
+
+  .open-tab {
+    padding: 10px 12px;
+  }
+}
+
+/* Mobile Landscape - screens smaller than 768px */
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 16px;
+  }
+
+  .header h1 {
+    font-size: 1.1rem;
+  }
+
+  /* Hide sidebar on mobile */
+  .sidebar {
+    display: none;
+  }
+
+  /* Stack editor and preview vertically */
+  .editor-layout {
+    flex-direction: column;
+  }
+
+  .editor-panel {
+    flex: 1;
+    border-right: none;
+    border-bottom: 1px solid #2d3555;
+    min-height: 50%;
+  }
+
+  .preview-panel {
+    flex: 1;
+    min-height: 50%;
+  }
+
+  /* Make tabs scrollable */
+  .open-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .open-tab {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .panel-header {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+}
+
+/* Mobile Portrait - screens smaller than 480px */
+@media (max-width: 480px) {
+  .header {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .header h1 {
+    font-size: 1rem;
+  }
+
+  .logo svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Even smaller tabs */
+  .open-tab {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+
+  .tab-icon svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Adjust editor/preview split */
+  .editor-panel {
+    min-height: 45%;
+  }
+
+  .preview-panel {
+    min-height: 45%;
+  }
+}
