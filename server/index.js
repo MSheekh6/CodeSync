@@ -27,7 +27,29 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Import routes
+const codeRoutes = require('./routes/code');
+const roomRoutes = require('./routes/rooms');
+
+// Use routes
+app.use('/api/code', codeRoutes);
+app.use('/api/rooms', roomRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.path 
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`📁 API Routes:`);
+  console.log(`   - GET  /api/health`);
+  console.log(`   - GET  /api/code`);
+  console.log(`   - POST /api/code`);
+  console.log(`   - GET  /api/rooms`);
+  console.log(`   - POST /api/rooms`);
 });
