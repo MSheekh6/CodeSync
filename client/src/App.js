@@ -1,4 +1,5 @@
 import CodeEditor from './components/CodeEditor';
+import SocketTest from './components/SocketTest';
 import './App.css';
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
         </div>
         <h1>CodeSync</h1>
       </header>
+      
+      {/* Socket.io Test - Remove after testing */}
+      <SocketTest />
       
       <main className="main-content">
         <CodeEditor />
