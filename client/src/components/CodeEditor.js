@@ -168,10 +168,12 @@ button:hover {
             options={{
               minimap: { enabled: false },
               fontSize: 14,
+              lineHeight: 24,
               wordWrap: 'on',
               automaticLayout: true,
               tabSize: 2,
               fontFamily: "'Fira Code', 'Consolas', monospace",
+              padding: { top: 16, bottom: 16 },
             }}
           />
         </div>

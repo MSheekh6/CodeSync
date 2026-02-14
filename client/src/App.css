@@ -147,6 +147,7 @@ body {
 .editor-container {
   flex: 1;
   overflow: hidden;
+  padding-top: 8px;
 }
 
 /* Panel Headers */
@@ -224,7 +225,7 @@ body {
 .preview-container {
   flex: 1;
   overflow: hidden;
-  padding: 0;
+  padding: 8px 0 0 0;
 }
 
 .preview-container iframe {
