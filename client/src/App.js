@@ -16,6 +16,7 @@ function App() {
         </div>
         <h1>CodeSync</h1>
       </header>
+      
       <main className="main-content">
         <CodeEditor />
       </main>
