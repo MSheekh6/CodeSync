@@ -32,7 +32,7 @@ const PreviewIcon = () => (
   </svg>
 );
 
-function CodeEditor() {
+function CodeEditor({ roomId, username }) {
   // Separate state for each language
   const [html, setHtml] = useState(`<h1>Hello World!</h1>
 <p>Start editing to see the preview update.</p>

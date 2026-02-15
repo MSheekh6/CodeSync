@@ -4,6 +4,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
+const roomManager = require('./utils/roomManager');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -39,6 +41,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Get room statistics
+app.get('/api/rooms/stats', (req, res) => {
+  res.json(roomManager.getRoomStats());
+});
+
 // Import routes
 const codeRoutes = require('./routes/code');
 const roomRoutes = require('./routes/rooms');
@@ -51,19 +58,83 @@ app.use('/api/rooms', roomRoutes);
 io.on('connection', (socket) => {
   console.log('✅ User connected:', socket.id);
 
-  // Test event - echo back messages
-  socket.on('test-message', (data) => {
-    console.log('📨 Received test message:', data);
-    socket.emit('test-response', { 
-      message: 'Server received your message!',
-      original: data,
-      timestamp: Date.now()
+  let currentRoom = null;
+  let currentUsername = null;
+
+  // Join room event
+  socket.on('join-room', ({ roomId, username }) => {
+    console.log(`\n🔔 Join room request: ${roomId} by ${username}`);
+
+    // Leave previous room if any
+    if (currentRoom) {
+      socket.leave(currentRoom);
+      roomManager.leaveRoom(currentRoom, socket.id);
+    }
+
+    // Join new room
+    socket.join(roomId);
+    currentRoom = roomId;
+    currentUsername = username;
+
+    const result = roomManager.joinRoom(roomId, socket.id, username);
+
+    // Send room data to user
+    socket.emit('room-joined', result.room);
+
+    // Notify others in room
+    socket.to(roomId).emit('user-joined', {
+      username,
+      userCount: result.room.userCount,
+      users: result.room.users
     });
+
+    console.log(`✅ ${username} successfully joined ${roomId}\n`);
+  });
+
+  // Code change event
+  socket.on('code-change', ({ roomId, language, code }) => {
+    if (roomManager.updateCode(roomId, language, code)) {
+      // Broadcast to others in room (not sender)
+      socket.to(roomId).emit('code-update', {
+        language,
+        code,
+        username: currentUsername
+      });
+    }
+  });
+
+  // Leave room event
+  socket.on('leave-room', () => {
+    if (currentRoom) {
+      const result = roomManager.leaveRoom(currentRoom, socket.id);
+      
+      if (result) {
+        socket.to(currentRoom).emit('user-left', {
+          username: result.username,
+          userCount: result.userCount
+        });
+      }
+
+      socket.leave(currentRoom);
+      currentRoom = null;
+      currentUsername = null;
+    }
   });
 
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log('❌ User disconnected:', socket.id);
+
+    if (currentRoom) {
+      const result = roomManager.leaveRoom(currentRoom, socket.id);
+      
+      if (result) {
+        socket.to(currentRoom).emit('user-left', {
+          username: result.username,
+          userCount: result.userCount
+        });
+      }
+    }
   });
 });
 
@@ -81,6 +152,7 @@ server.listen(PORT, () => {
   console.log(`🔌 Socket.io ready for connections`);
   console.log(`📁 API Routes:`);
   console.log(`   - GET  /api/health`);
+  console.log(`   - GET  /api/rooms/stats`);
   console.log(`   - GET  /api/code`);
   console.log(`   - POST /api/code`);
   console.log(`   - GET  /api/rooms`);
