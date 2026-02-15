@@ -1,7 +1,26 @@
+import { useState } from 'react';
 import CodeEditor from './components/CodeEditor';
+import RoomJoin from './components/RoomJoin';
 import './App.css';
 
 function App() {
+  const [roomInfo, setRoomInfo] = useState(null);
+
+  const handleJoinRoom = (roomId, username) => {
+    console.log('Joining room:', roomId, 'as', username);
+    setRoomInfo({ roomId, username });
+  };
+
+  const handleLeaveRoom = () => {
+    setRoomInfo(null);
+  };
+
+  // Show room join screen if not in a room
+  if (!roomInfo) {
+    return <RoomJoin onJoinRoom={handleJoinRoom} />;
+  }
+
+  // Show editor once in a room
   return (
     <div className="app">
       <header className="header">
@@ -15,10 +34,17 @@ function App() {
           </svg>
         </div>
         <h1>CodeSync</h1>
+        <div className="room-info">
+          <span className="room-id">Room: {roomInfo.roomId}</span>
+          <span className="username">👤 {roomInfo.username}</span>
+          <button onClick={handleLeaveRoom} className="btn-leave">
+            Leave Room
+          </button>
+        </div>
       </header>
       
       <main className="main-content">
-        <CodeEditor />
+        <CodeEditor roomId={roomInfo.roomId} username={roomInfo.username} />
       </main>
     </div>
   );
