@@ -8,11 +8,12 @@ const roomManager = require('./utils/roomManager');
 
 const app = express();
 const server = http.createServer(app);
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
 // Configure Socket.io with CORS
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: CLIENT_URL,
     methods: ["GET", "POST"]
   }
 });
@@ -20,7 +21,7 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json());
 
 // Health check endpoint
