@@ -93,13 +93,12 @@ io.on('connection', (socket) => {
   });
 
   // Code change event
-  socket.on('code-change', ({ roomId, language, code }) => {
-    if (roomManager.updateCode(roomId, language, code)) {
+  socket.on('code-change', ({ roomId, fileName, code }) => {
+    if (roomManager.updateCode(roomId, fileName, code)) {
       // Broadcast to others in room (not sender)
       socket.to(roomId).emit('code-update', {
-        language,
-        code,
-        username: currentUsername
+        fileName,
+        code
       });
     }
   });

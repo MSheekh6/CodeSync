@@ -1,5 +1,7 @@
 import Editor from '@monaco-editor/react';
-import { useState } from 'react';
+import { io } from 'socket.io-client';
+import { useEffect, useRef, useState } from 'react';
+import { SERVER_URL } from '../config';
 
 // SVG Icons for file types
 const HtmlIcon = () => (
@@ -33,6 +35,10 @@ const PreviewIcon = () => (
 );
 
 function CodeEditor({ roomId, username }) {
+  const socketRef = useRef(null);
+  const changeTimeoutRef = useRef(null);
+  const applyingRemoteChangeRef = useRef(false);
+
   // Separate state for each language
   const [html, setHtml] = useState(`<h1>Hello World!</h1>
 <p>Start editing to see the preview update.</p>
@@ -75,6 +81,56 @@ button:hover {
     { id: 'js', name: 'script.js', icon: <JsIcon /> },
   ];
 
+  useEffect(() => {
+    const socket = io(SERVER_URL);
+    socketRef.current = socket;
+
+    socket.on('room-joined', ({ files: roomFiles }) => {
+      if (!roomFiles) return;
+
+      applyingRemoteChangeRef.current = true;
+      if (typeof roomFiles.html === 'string') setHtml(roomFiles.html);
+      if (typeof roomFiles.css === 'string') setCss(roomFiles.css);
+      if (typeof roomFiles.js === 'string') setJs(roomFiles.js);
+      setTimeout(() => {
+        applyingRemoteChangeRef.current = false;
+      }, 0);
+    });
+
+    socket.on('code-update', ({ fileName, code }) => {
+      if (typeof code !== 'string') return;
+
+      applyingRemoteChangeRef.current = true;
+      switch (fileName) {
+        case 'html':
+          setHtml(code);
+          break;
+        case 'css':
+          setCss(code);
+          break;
+        case 'js':
+          setJs(code);
+          break;
+        default:
+          break;
+      }
+      setTimeout(() => {
+        applyingRemoteChangeRef.current = false;
+      }, 0);
+    });
+
+    socket.emit('join-room', { roomId, username });
+
+    return () => {
+      if (changeTimeoutRef.current) {
+        clearTimeout(changeTimeoutRef.current);
+      }
+      socket.emit('leave-room');
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [roomId, username]);
+
   // Get current code based on active tab
   const getCode = () => {
     switch (activeTab) {
@@ -97,12 +153,29 @@ button:hover {
 
   // Handle code changes
   const handleEditorChange = (value) => {
+    if (applyingRemoteChangeRef.current) return;
+
+    const fileName = activeTab;
+    const code = value || '';
+
     switch (activeTab) {
-      case 'html': setHtml(value); break;
-      case 'css': setCss(value); break;
-      case 'js': setJs(value); break;
+      case 'html': setHtml(code); break;
+      case 'css': setCss(code); break;
+      case 'js': setJs(code); break;
       default: break;
     }
+
+    if (changeTimeoutRef.current) {
+      clearTimeout(changeTimeoutRef.current);
+    }
+
+    changeTimeoutRef.current = setTimeout(() => {
+      socketRef.current?.emit('code-change', {
+        roomId,
+        fileName,
+        code
+      });
+    }, 150);
   };
 
   // Combine all code for preview
