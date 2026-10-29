@@ -40,7 +40,7 @@ class RoomManager {
       success: true,
       room: {
         roomId,
-        code: room.code,
+        files: room.code,
         users: Array.from(room.users.values()).map(u => u.username),
         userCount: room.users.size
       }
@@ -72,12 +72,12 @@ class RoomManager {
     return null;
   }
 
-  updateCode(roomId, language, code) {
+  updateCode(roomId, fileName, code) {
     const room = this.rooms.get(roomId);
     if (!room) return false;
 
-    if (language === 'html' || language === 'css' || language === 'js') {
-      room.code[language] = code;
+    if (fileName === 'html' || fileName === 'css' || fileName === 'js') {
+      room.code[fileName] = code;
       return true;
     }
 
