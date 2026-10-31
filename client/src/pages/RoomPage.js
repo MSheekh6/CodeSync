@@ -1,35 +1,20 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
+import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 function RoomPage() {
   const { roomId } = useParams();
-  const [username, setUsername] = useState(() => sessionStorage.getItem('codesync-username') || '');
-  const [nameInput, setNameInput] = useState('');
+  const { user } = useAuth();
+  const [copied, setCopied] = useState(false);
+  const activeUsername = user?.username || 'Guest';
 
-  const enterRoom = (event) => {
-    event.preventDefault();
-    const name = nameInput.trim();
-    if (!name) return;
-    sessionStorage.setItem('codesync-username', name);
-    setUsername(name);
+  const copyInvite = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  if (!username) {
-    return (
-      <div className="room-access">
-        <form className="room-access-card" onSubmit={enterRoom}>
-          <span className="eyebrow">Room ready</span>
-          <h1>Choose a display name</h1>
-          <p>Enter the room as a guest to start collaborating.</p>
-          <label htmlFor="room-name">Display name</label>
-          <input id="room-name" value={nameInput} onChange={(event) => setNameInput(event.target.value)} autoFocus required />
-          <button className="button button-primary" type="submit">Enter room</button>
-        </form>
-      </div>
-    );
-  }
 
   return (
     <div className="app room-app">
@@ -42,11 +27,13 @@ function RoomPage() {
         <h1>CodeSync</h1>
         <div className="room-info">
           <span className="room-id">Room: {roomId}</span>
-          <span className="username">👤 {username}</span>
+          <span className="username">👤 {activeUsername}</span>
+          {user && <Link className="room-dashboard-link" to="/dashboard">Dashboard</Link>}
+          <button className="button button-secondary button-small" type="button" onClick={copyInvite}>{copied ? 'Copied' : 'Copy invite link'}</button>
         </div>
       </header>
       <main className="main-content">
-        <CodeEditor roomId={roomId} username={username} />
+        <CodeEditor roomId={roomId} username={activeUsername} />
       </main>
     </div>
   );

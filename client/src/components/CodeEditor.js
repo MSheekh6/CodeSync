@@ -1,7 +1,9 @@
 import Editor from '@monaco-editor/react';
 import { io } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { SERVER_URL } from '../config';
+import PresenceBar from './PresenceBar';
 
 // SVG Icons for file types
 const HtmlIcon = () => (
@@ -35,9 +37,14 @@ const PreviewIcon = () => (
 );
 
 function CodeEditor({ roomId, username }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const socketRef = useRef(null);
   const changeTimeoutRef = useRef(null);
   const applyingRemoteChangeRef = useRef(false);
+  const [presence, setPresence] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [connectionError, setConnectionError] = useState('');
 
   // Separate state for each language
   const [html, setHtml] = useState(`<h1>Hello World!</h1>
@@ -82,12 +89,24 @@ button:hover {
   ];
 
   useEffect(() => {
-    const socket = io(SERVER_URL);
+    const socket = io(SERVER_URL, { withCredentials: true });
     socketRef.current = socket;
 
-    socket.on('room-joined', ({ files: roomFiles }) => {
+    socket.on('connect', () => setConnectionError(''));
+    socket.on('connect_error', (error) => {
+      if (error.message === 'unauthorized') {
+        setConnectionError('Please log in to join this room.');
+        navigate('/login', { state: { from: location } });
+        return;
+      }
+      setConnectionError('Connection interrupted. Reconnecting…');
+    });
+    socket.on('socket-error', ({ error }) => setConnectionError(error || 'Unable to join room.'));
+
+    socket.on('room-joined', ({ files: roomFiles, currentUser }) => {
       if (!roomFiles) return;
 
+      setCurrentUserId(currentUser?.userId || null);
       applyingRemoteChangeRef.current = true;
       if (typeof roomFiles.html === 'string') setHtml(roomFiles.html);
       if (typeof roomFiles.css === 'string') setCss(roomFiles.css);
@@ -119,7 +138,9 @@ button:hover {
       }, 0);
     });
 
-    socket.emit('join-room', { roomId, username });
+    socket.on('presence-update', (users) => setPresence(Array.isArray(users) ? users : []));
+
+    socket.emit('join-room', { roomId });
 
     return () => {
       if (changeTimeoutRef.current) {
@@ -129,7 +150,7 @@ button:hover {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [roomId, username]);
+  }, [location, navigate, roomId, username]);
 
   // Get current code based on active tab
   const getCode = () => {
@@ -194,6 +215,9 @@ button:hover {
   };
 
   return (
+    <div className="editor-shell">
+    {connectionError && <div className="socket-notice" role="status">{connectionError}</div>}
+    <PresenceBar users={presence} currentUserId={currentUserId} />
     <div className="editor-layout">
       {/* Sidebar - File Explorer */}
       <div className="sidebar">
@@ -266,6 +290,7 @@ button:hover {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }

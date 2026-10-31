@@ -1,12 +1,13 @@
 class RoomManager {
   constructor() {
-    this.rooms = new Map(); // roomId -> { users: Map, code: { html, css, js } }
+    this.rooms = new Map();
+    this.colors = ['#ff6b6b', '#ffb84d', '#3ddc97', '#4dabff', '#c77dff', '#ff7ad9'];
   }
 
   createRoom(roomId) {
     if (!this.rooms.has(roomId)) {
       this.rooms.set(roomId, {
-        users: new Map(), // socketId -> { username, joinedAt }
+        users: new Map(),
         code: {
           html: '<h1>Welcome to CodeSync!</h1>\n<p>Start coding together.</p>',
           css: 'body {\n  font-family: Arial, sans-serif;\n  padding: 20px;\n}',
@@ -19,7 +20,7 @@ class RoomManager {
     return this.rooms.get(roomId);
   }
 
-  joinRoom(roomId, socketId, username) {
+  joinRoom(roomId, socketId, identity) {
     let room = this.rooms.get(roomId);
     
     // Create room if it doesn't exist
@@ -28,12 +29,17 @@ class RoomManager {
     }
 
     // Add user to room
+    const usedColors = new Set(Array.from(room.users.values()).map((user) => user.color));
+    const color = this.colors.find((candidate) => !usedColors.has(candidate)) || this.colors[room.users.size % this.colors.length];
     room.users.set(socketId, {
-      username,
+      userId: identity.userId,
+      username: identity.username,
+      color,
+      isGuest: identity.isGuest,
       joinedAt: new Date()
     });
 
-    console.log(`👤 ${username} (${socketId}) joined room: ${roomId}`);
+    console.log(`👤 ${identity.username} (${socketId}) joined room: ${roomId}`);
     console.log(`   Users in room: ${room.users.size}`);
 
     return {
@@ -41,8 +47,13 @@ class RoomManager {
       room: {
         roomId,
         files: room.code,
-        users: Array.from(room.users.values()).map(u => u.username),
-        userCount: room.users.size
+        userCount: room.users.size,
+        currentUser: {
+          userId: identity.userId,
+          username: identity.username,
+          color,
+          isGuest: identity.isGuest
+        }
       }
     };
   }
@@ -93,6 +104,17 @@ class RoomManager {
     if (!room) return [];
     
     return Array.from(room.users.values()).map(u => u.username);
+  }
+
+  getPresence(roomId) {
+    const room = this.rooms.get(roomId);
+    if (!room) return [];
+    return Array.from(room.users.values()).map(({ userId, username, color, isGuest }) => ({
+      userId,
+      username,
+      color,
+      isGuest
+    }));
   }
 
   getRoomStats() {
