@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const features = [
   ['Real-time editing', 'Write in one editor together and see every change land instantly.', false, '↔'],
@@ -50,6 +51,7 @@ function CodeMockup() {
 
 function LandingPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [joinOpen, setJoinOpen] = useState(false);
   const [roomId, setRoomId] = useState('');
 
@@ -73,7 +75,7 @@ function LandingPage() {
             <h1>Code together, <span>in the same tab.</span></h1>
             <p>Write HTML, CSS and JavaScript with friends or teammates and watch every keystroke land instantly, with a live preview right beside it.</p>
             <div className="hero-actions">
-              <Link className="button button-primary" to="/signup">Start coding free <span>→</span></Link>
+              <Link className="button button-primary" to={user ? '/dashboard' : '/signup'}>{user ? 'Go to dashboard' : 'Start coding free'} <span>→</span></Link>
               <button className="button button-secondary" type="button" onClick={() => setJoinOpen((open) => !open)}>Join a room <span>↗</span></button>
             </div>
             {joinOpen && (
@@ -118,7 +120,7 @@ function LandingPage() {
         </section>
       </ScrollReveal>
 
-      <section className="container cta-panel"><span className="eyebrow">Make room for momentum</span><h2>Your next project doesn't have to be a solo one.</h2><Link className="button button-primary" to="/signup">Create your free account <span>→</span></Link></section>
+      <section className="container cta-panel"><span className="eyebrow">Make room for momentum</span><h2>Your next project doesn't have to be a solo one.</h2><Link className="button button-primary" to={user ? '/dashboard' : '/signup'}>{user ? 'Go to dashboard' : 'Create your free account'} <span>→</span></Link></section>
     </div>
   );
 }

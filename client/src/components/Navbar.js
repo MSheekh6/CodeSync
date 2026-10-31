@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function LogoMark() {
   return (
@@ -14,6 +15,7 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setMenuOpen(false);
@@ -48,6 +50,23 @@ function Navbar() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [menuOpen]);
 
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const accountLinks = user ? (
+    <>
+      <Link to="/dashboard">Dashboard</Link>
+      <span className="nav-user">{user.username[0].toUpperCase()}{user.username}</span>
+      <button className="button button-ghost" type="button" onClick={handleLogout}>Log out</button>
+    </>
+  ) : (
+    <>
+      <Link className="button button-ghost" to="/login">Log in</Link>
+      <Link className="button button-primary button-small" to="/signup">Sign up</Link>
+    </>
+  );
+
   return (
     <header className="site-nav">
       <div className="nav-inner">
@@ -59,10 +78,7 @@ function Navbar() {
           <Link to="/#features">Features</Link>
           <Link to="/#how-it-works">How it works</Link>
         </nav>
-        <div className="nav-actions desktop-nav">
-          <Link className="button button-ghost" to="/login">Log in</Link>
-          <Link className="button button-primary button-small" to="/signup">Sign up</Link>
-        </div>
+        <div className="nav-actions desktop-nav">{accountLinks}</div>
         <button
           className="menu-toggle"
           type="button"
@@ -79,8 +95,8 @@ function Navbar() {
         <div className="mobile-menu" ref={menuRef}>
           <Link to="/#features">Features</Link>
           <Link to="/#how-it-works">How it works</Link>
-          <Link to="/login">Log in</Link>
-          <Link className="button button-primary" to="/signup">Sign up</Link>
+          {user ? <Link to="/dashboard">Dashboard</Link> : <Link to="/login">Log in</Link>}
+          {user ? <button className="button button-ghost" type="button" onClick={handleLogout}>Log out</button> : <Link className="button button-primary" to="/signup">Sign up</Link>}
         </div>
       )}
     </header>

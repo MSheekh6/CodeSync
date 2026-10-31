@@ -1,27 +1,34 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const roomManager = require('./utils/roomManager');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const server = http.createServer(app);
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
 // Configure Socket.io with CORS
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
-    methods: ["GET", "POST"]
+    origin: CLIENT_ORIGIN,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
 const PORT = process.env.PORT || 5000;
+const allowGuests = process.env.ALLOW_GUESTS !== 'false';
 
 // Middleware
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 // Health check endpoint
@@ -54,52 +61,86 @@ const roomRoutes = require('./routes/rooms');
 // Use routes
 app.use('/api/code', codeRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/auth', authRoutes);
+
+function getSocketToken(socket) {
+  const cookieHeader = socket.handshake.headers.cookie || '';
+  const tokenCookie = cookieHeader.split(';').map((cookie) => cookie.trim()).find((cookie) => cookie.startsWith('token='));
+  return tokenCookie ? decodeURIComponent(tokenCookie.slice('token='.length)) : socket.handshake.auth?.token;
+}
+
+io.use((socket, next) => {
+  const token = getSocketToken(socket);
+  if (token && process.env.JWT_SECRET) {
+    try {
+      const identity = jwt.verify(token, process.env.JWT_SECRET);
+      socket.data.userId = identity.id;
+      socket.data.username = identity.username;
+      socket.data.isGuest = false;
+      return next();
+    } catch (error) {
+      if (!allowGuests) return next(new Error('unauthorized'));
+    }
+  }
+
+  if (!allowGuests) return next(new Error('unauthorized'));
+  socket.data.userId = `guest-${socket.id}`;
+  socket.data.username = `Guest-${Math.floor(1000 + Math.random() * 9000)}`;
+  socket.data.isGuest = true;
+  return next();
+});
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
   console.log('✅ User connected:', socket.id);
 
   let currentRoom = null;
-  let currentUsername = null;
 
   // Join room event
-  socket.on('join-room', ({ roomId, username }) => {
-    console.log(`\n🔔 Join room request: ${roomId} by ${username}`);
+  socket.on('join-room', (payload = {}) => {
+    try {
+      const { roomId } = payload;
+      if (typeof roomId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(roomId)) {
+        return socket.emit('socket-error', { error: 'Invalid room ID.' });
+      }
+      console.log(`\n🔔 Join room request: ${roomId} by ${socket.data.username}`);
 
-    // Leave previous room if any
-    if (currentRoom) {
-      socket.leave(currentRoom);
-      roomManager.leaveRoom(currentRoom, socket.id);
+      if (currentRoom) {
+        const previousRoom = currentRoom;
+        socket.leave(currentRoom);
+        roomManager.leaveRoom(currentRoom, socket.id);
+        io.to(previousRoom).emit('presence-update', roomManager.getPresence(previousRoom));
+      }
+
+      socket.join(roomId);
+      currentRoom = roomId;
+
+      const result = roomManager.joinRoom(roomId, socket.id, {
+        userId: socket.data.userId,
+        username: socket.data.username,
+        isGuest: socket.data.isGuest
+      });
+
+      socket.emit('room-joined', result.room);
+      io.to(roomId).emit('presence-update', roomManager.getPresence(roomId));
+
+      console.log(`✅ ${socket.data.username} successfully joined ${roomId}\n`);
+    } catch (error) {
+      console.error('Join room failed:', error.message);
+      socket.emit('socket-error', { error: 'Unable to join room.' });
     }
-
-    // Join new room
-    socket.join(roomId);
-    currentRoom = roomId;
-    currentUsername = username;
-
-    const result = roomManager.joinRoom(roomId, socket.id, username);
-
-    // Send room data to user
-    socket.emit('room-joined', result.room);
-
-    // Notify others in room
-    socket.to(roomId).emit('user-joined', {
-      username,
-      userCount: result.room.userCount,
-      users: result.room.users
-    });
-
-    console.log(`✅ ${username} successfully joined ${roomId}\n`);
   });
 
   // Code change event
-  socket.on('code-change', ({ roomId, fileName, code }) => {
-    if (roomManager.updateCode(roomId, fileName, code)) {
-      // Broadcast to others in room (not sender)
-      socket.to(roomId).emit('code-update', {
-        fileName,
-        code
-      });
+  socket.on('code-change', (payload = {}) => {
+    try {
+      const { roomId, fileName, code } = payload;
+      if (roomId !== currentRoom || typeof fileName !== 'string' || typeof code !== 'string') return;
+      if (roomManager.updateCode(roomId, fileName, code)) {
+        socket.to(roomId).emit('code-update', { fileName, code });
+      }
+    } catch (error) {
+      console.error('Code change failed:', error.message);
     }
   });
 
@@ -108,16 +149,9 @@ io.on('connection', (socket) => {
     if (currentRoom) {
       const result = roomManager.leaveRoom(currentRoom, socket.id);
       
-      if (result) {
-        socket.to(currentRoom).emit('user-left', {
-          username: result.username,
-          userCount: result.userCount
-        });
-      }
-
       socket.leave(currentRoom);
+      io.to(currentRoom).emit('presence-update', roomManager.getPresence(currentRoom));
       currentRoom = null;
-      currentUsername = null;
     }
   });
 
@@ -128,12 +162,7 @@ io.on('connection', (socket) => {
     if (currentRoom) {
       const result = roomManager.leaveRoom(currentRoom, socket.id);
       
-      if (result) {
-        socket.to(currentRoom).emit('user-left', {
-          username: result.username,
-          userCount: result.userCount
-        });
-      }
+      io.to(currentRoom).emit('presence-update', roomManager.getPresence(currentRoom));
     }
   });
 });
@@ -147,6 +176,14 @@ app.use((req, res) => {
 });
 
 // Start server (use server.listen for Socket.io)
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB connected'))
+    .catch((error) => console.error('❌ MongoDB connection failed:', error.message));
+} else {
+  console.warn('⚠️ MONGODB_URI is not configured; authentication routes require MongoDB');
+}
+
 server.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`🔌 Socket.io ready for connections`);
