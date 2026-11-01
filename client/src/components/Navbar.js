@@ -2,15 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-
-function LogoMark() {
-  return (
-    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M12 8 6 16l6 8M20 8l6 8-6 8" />
-      <circle cx="16" cy="16" r="2.5" />
-    </svg>
-  );
-}
+import LogoMark from './LogoMark';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);

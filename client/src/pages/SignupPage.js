@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AuthProviders from '../components/AuthProviders';
+import LogoMark from '../components/LogoMark';
 
 function SignupPage() {
   const { signup } = useAuth();
@@ -26,15 +28,20 @@ function SignupPage() {
     }
   };
 
+  const handleProviderClick = (provider) => {
+    setError(`${provider} sign-in is not connected yet. Use email and password for now.`);
+  };
+
   return (
     <div className="auth-page"><form className="auth-card" onSubmit={submit}>
-      <svg className="auth-logo" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 8 6 16l6 8M20 8l6 8-6 8" /><circle cx="16" cy="16" r="2.5" /></svg>
+      <LogoMark className="auth-logo" />
       <span className="eyebrow">Start building</span><h1>Create your account</h1><p>Save your rooms and keep your ideas moving.</p>
       <label htmlFor="signup-username">Username</label><input id="signup-username" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} autoComplete="username" />
       <label htmlFor="signup-email">Email</label><input id="signup-email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} autoComplete="email" />
       <label htmlFor="signup-password">Password</label><div className="password-field"><input id="signup-password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} autoComplete="new-password" /><button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide' : 'Show'}</button></div>
       {error && <div className="form-error" role="alert" aria-live="polite">{error}</div>}
       <button className="button button-primary auth-submit" disabled={submitting} type="submit">{submitting ? 'Creating account…' : 'Create account'}</button>
+      <AuthProviders onProviderClick={handleProviderClick} />
       <span className="auth-switch">Already have an account? <Link to="/login">Log in</Link></span>
     </form></div>
   );

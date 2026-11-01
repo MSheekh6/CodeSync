@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import LogoMark from './LogoMark';
 
 function Footer() {
   return (
@@ -6,7 +7,7 @@ function Footer() {
       <div className="footer-grid">
         <div className="footer-brand">
           <Link className="brand" to="/">
-            <span className="footer-brand-mark">&lt;&gt;</span>
+            <LogoMark />
             <span>CodeSync</span>
           </Link>
           <p>Build together in the same tab, with live code and preview side by side.</p>
