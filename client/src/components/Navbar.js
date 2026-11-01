@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 function LogoMark() {
   return (
@@ -16,6 +17,7 @@ function Navbar() {
   const menuRef = useRef(null);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     setMenuOpen(false);
@@ -79,6 +81,9 @@ function Navbar() {
           <Link to="/#how-it-works">How it works</Link>
         </nav>
         <div className="nav-actions desktop-nav">{accountLinks}</div>
+        <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          {theme === 'dark' ? '☼' : '☾'}
+        </button>
         <button
           className="menu-toggle"
           type="button"
@@ -97,6 +102,7 @@ function Navbar() {
           <Link to="/#how-it-works">How it works</Link>
           {user ? <Link to="/dashboard">Dashboard</Link> : <Link to="/login">Log in</Link>}
           {user ? <button className="button button-ghost" type="button" onClick={handleLogout}>Log out</button> : <Link className="button button-primary" to="/signup">Sign up</Link>}
+          <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? '☼' : '☾'}</button>
         </div>
       )}
     </header>

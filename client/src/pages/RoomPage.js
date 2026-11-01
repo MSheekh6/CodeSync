@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import '../App.css';
 
 function RoomPage() {
   const { roomId } = useParams();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [copied, setCopied] = useState(false);
   const activeUsername = user?.username || 'Guest';
 
@@ -30,6 +32,7 @@ function RoomPage() {
           <span className="username">👤 {activeUsername}</span>
           {user && <Link className="room-dashboard-link" to="/dashboard">Dashboard</Link>}
           <button className="button button-secondary button-small" type="button" onClick={copyInvite}>{copied ? 'Copied' : 'Copy invite link'}</button>
+          <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? '☼' : '☾'}</button>
         </div>
       </header>
       <main className="main-content">
