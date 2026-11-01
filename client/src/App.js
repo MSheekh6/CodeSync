@@ -9,23 +9,26 @@ import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import RoomPage from './pages/RoomPage';
 import SignupPage from './pages/SignupPage';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
-            <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          </Route>
-          <Route path="/room/:roomId" element={<RoomPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+              <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            </Route>
+            <Route path="/room/:roomId" element={<RoomPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
