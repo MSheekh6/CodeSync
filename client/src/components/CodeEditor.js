@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SERVER_URL } from '../config';
+import { useTheme } from '../context/ThemeContext';
 import PresenceBar from './PresenceBar';
 
 // SVG Icons for file types
@@ -39,6 +40,7 @@ const PreviewIcon = () => (
 function CodeEditor({ roomId, username }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
   const socketRef = useRef(null);
   const changeTimeoutRef = useRef(null);
   const applyingRemoteChangeRef = useRef(false);
@@ -259,7 +261,7 @@ button:hover {
           <Editor
             height="100%"
             language={getLanguage()}
-            theme="vs-dark"
+            theme={theme === 'dark' ? 'vs-dark' : 'vs'}
             value={getCode()}
             onChange={handleEditorChange}
             options={{
@@ -269,7 +271,7 @@ button:hover {
               wordWrap: 'on',
               automaticLayout: true,
               tabSize: 2,
-              fontFamily: "'Fira Code', 'Consolas', monospace",
+              fontFamily: "Consolas, Monaco, monospace",
               padding: { top: 16, bottom: 16 },
             }}
           />
