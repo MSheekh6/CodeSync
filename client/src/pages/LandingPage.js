@@ -3,12 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const features = [
-  ['Real-time editing', 'Write in one editor together and see every change land instantly.', false, '↔'],
-  ['Live preview', 'Render HTML, CSS, and JavaScript beside the editor as you build.', true, '◫'],
-  ['Presence', 'See who is in the room and know when your teammates are online.', true, '◉'],
-  ['Shareable rooms', 'Share a link. Anyone who opens it lands in the same editor.', false, '↗'],
-  ['Saved projects', 'Keep your best experiments ready to revisit whenever inspiration strikes.', true, '▣'],
-  ['Fork and remix', 'Start from a project you like and make it your own.', true, '◇'],
+  ['Real-time editing', 'One file, many cursors. Changes arrive as people make them—without a save, merge, or refresh.', false, '01'],
+  ['Live preview', 'HTML, CSS, and JavaScript sit side by side. Test an idea while the rest of the room keeps moving.', true, '02'],
+  ['Presence', 'A small, useful signal: who is here, what they are editing, and whether the room is active.', true, '03'],
+  ['Shareable rooms', 'Send the room link. There is no workspace setup waiting on the other side.', false, '04'],
+  ['Saved projects', 'Keep finished experiments close, ready to reopen when inspiration comes back.', true, '05'],
+  ['Fork and remix', 'Take a working project in a new direction instead of starting from a blank page.', true, '06'],
 ];
 
 function ScrollReveal({ children, className = '' }) {
@@ -71,9 +71,9 @@ function LandingPage() {
       <section className="hero-section">
         <div className="container hero-grid">
           <div className="hero-copy">
-            <span className="eyebrow">Live collaboration for the web stack</span>
-            <h1>Code together, <span>in the same tab.</span></h1>
-            <p>Write HTML, CSS and JavaScript with friends or teammates and watch every keystroke land instantly, with a live preview right beside it.</p>
+            <span className="eyebrow">A room for making things on the web</span>
+            <h1>Make it together, <span>while it is live.</span></h1>
+            <p>CodeSync is a shared scratchpad for HTML, CSS, and JavaScript. Open a room, bring a few people, and work on the same idea at the same time.</p>
             <div className="hero-actions">
               <Link className="button button-primary" to={user ? '/dashboard' : '/signup'}>{user ? 'Go to dashboard' : 'Start coding free'} <span>→</span></Link>
               <button className="button button-secondary" type="button" onClick={() => setJoinOpen((open) => !open)}>Join a room <span>↗</span></button>
@@ -93,7 +93,7 @@ function LandingPage() {
 
       <ScrollReveal className="landing-section">
         <section className="container section-block" id="features">
-          <div className="section-heading"><span className="eyebrow">Everything in sync</span><h2>Small tools for big ideas.</h2><p>Code together without switching between chat, editor, and preview.</p></div>
+          <div className="section-heading"><span className="eyebrow">Inside the room</span><h2>Enough to stay in flow.</h2><p>No sprawling toolkit. Just the pieces a small team needs to make and understand a web page together.</p></div>
           <div className="feature-grid">
             {features.map(([title, copy, comingSoon, icon], index) => (
               <article className={`feature-card feature-card-${index}`} key={title}>
@@ -109,7 +109,7 @@ function LandingPage() {
 
       <ScrollReveal className="landing-section">
         <section className="container section-block" id="how-it-works">
-          <div className="section-heading"><span className="eyebrow">Three steps</span><h2>From idea to shared room.</h2></div>
+          <div className="section-heading"><span className="eyebrow">Three short steps</span><h2>Open, invite, make.</h2></div>
           <div className="steps-grid">
             {[
               ['01', 'Create a room', 'Choose a room ID and open an editor in seconds.'],
@@ -120,7 +120,7 @@ function LandingPage() {
         </section>
       </ScrollReveal>
 
-      <section className="container cta-panel"><span className="eyebrow">Make room for momentum</span><h2>Your next project doesn't have to be a solo one.</h2><Link className="button button-primary" to={user ? '/dashboard' : '/signup'}>{user ? 'Go to dashboard' : 'Create your free account'} <span>→</span></Link></section>
+      <section className="container cta-panel"><span className="eyebrow">Bring one small idea</span><h2>See what it becomes with someone else in the room.</h2><Link className="button button-primary" to={user ? '/dashboard' : '/signup'}>{user ? 'Go to dashboard' : 'Create your free account'} <span>→</span></Link></section>
     </div>
   );
 }
